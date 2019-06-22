@@ -1,0 +1,40 @@
+# Development environment
+version: "3"
+services:
+  mongo:
+    image: "mongo:latest"
+    restart: always
+    volumes:
+      - ./data:/data/db
+  nginx:
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - "3050:80"
+    depends_on:
+      - api
+      - client
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./server
+    volumes:
+      - /app/node_modules
+      - ./server:/app
+    # Consider to append this in next refactoring..
+    # environment:
+    #   - MONGO_HOST=mongo
+    #   - MONGO_PORT=27017
+    depends_on:
+      - mongo
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      - /app/node_modules
+      - ./client:/app
+    depends_on:
+      - api
